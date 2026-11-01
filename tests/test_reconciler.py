@@ -153,6 +153,56 @@ class ReconcilerTests(unittest.TestCase):
         self.assertFalse(result.changed)
         self.assertFalse(result.managed)
 
+    def test_reconcile_is_idempotent(self):
+        policy = StoragePolicy(storage_class_name="local-path-ha")
+        deployment = {
+            "kind": "Deployment",
+            "metadata": {"name": "api"},
+            "spec": {
+                "template": {
+                    "spec": {
+                        "volumes": [
+                            {"name": "data", "persistentVolumeClaim": {"claimName": "api-data"}}
+                        ]
+                    }
+                }
+            },
+        }
+        pvcs = {"api-data": {"spec": {"storageClassName": "local-path-ha"}}}
+
+        first = reconcile_workload(deployment, pvcs, policy)
+        second = reconcile_workload(first.workload, pvcs, policy)
+
+        self.assertTrue(first.changed)
+        self.assertFalse(second.changed)
+
+    def test_preserves_pod_affinity_and_anti_affinity(self):
+        policy = StoragePolicy(storage_class_name="local-path-ha")
+        workload = {
+            "kind": "Deployment",
+            "metadata": {"name": "api"},
+            "spec": {
+                "template": {
+                    "spec": {
+                        "volumes": [
+                            {"name": "data", "persistentVolumeClaim": {"claimName": "api-data"}}
+                        ],
+                        "affinity": {
+                            "podAffinity": {"preferredDuringSchedulingIgnoredDuringExecution": []},
+                            "podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": []},
+                        },
+                    }
+                }
+            },
+        }
+        pvcs = {"api-data": {"spec": {"storageClassName": "local-path-ha"}}}
+
+        result = reconcile_workload(workload, pvcs, policy)
+        affinity = result.workload["spec"]["template"]["spec"]["affinity"]
+
+        self.assertIn("podAffinity", affinity)
+        self.assertIn("podAntiAffinity", affinity)
+
 
 if __name__ == "__main__":
     unittest.main()

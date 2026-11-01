@@ -359,3 +359,17 @@ tolerations:
 8. 외부 복제 솔루션 hook 연동
 9. Admission Webhook 도입 검토
 
+## Prototype 실행
+
+정책 값은 `deploy/configmap.yaml`의 ConfigMap으로 관리하며, Deployment에서 `envFrom`으로 주입합니다. 기본 설정은 StorageClass `local-path-ha`, active 라벨 `storage-ha/role=active`, 준비 라벨 `storage-ha/ready=true`입니다.
+
+이미지 빌드:
+
+```sh
+docker build -t watcher-operator:dev .
+```
+
+현재 프로토타입은 Kopf 기반 장기 실행 진입점으로 Deployment와 StatefulSet, PVC 이벤트를 감시하고, 대상 workload에 affinity를 patch합니다. ConfigMap 환경변수와 RBAC, Kopf peering, health probe를 포함한 기본 배포 리소스는 `deploy/`에 있습니다. 전체 Linux/클러스터 통합 검증은 별도 handoff 문서의 체크리스트를 따라 진행해야 합니다.
+
+Linux VM에서 확인할 작업과 현재 구현 한계는 [V1_HANDOFF.md](V1_HANDOFF.md)에 정리되어 있습니다. 현재 프로토타입은 failover 자동화나 mount 상태 감시 agent를 포함하지 않습니다.
+

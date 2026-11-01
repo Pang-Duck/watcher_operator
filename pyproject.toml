@@ -9,10 +9,13 @@ description = "Prototype Kubernetes operator logic for HA local-path PV workload
 requires-python = ">=3.11"
 dependencies = []
 
+[project.scripts]
+watcher-operator = "watcher_operator.__main__:main"
+
 [project.optional-dependencies]
 operator = [
-  "kopf>=1.37.0",
-  "kubernetes>=29.0.0",
+  "kopf>=1.38.0,<2",
+  "kubernetes>=30.1.0,<35",
 ]
 test = []
 

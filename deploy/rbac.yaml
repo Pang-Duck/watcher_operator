@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: watcher-operator
+  namespace: storage-operator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: watcher-operator
+rules:
+  - apiGroups: [apps]
+    resources: [deployments, statefulsets]
+    verbs: [get, list, watch, patch]
+  - apiGroups: [""]
+    resources: [persistentvolumeclaims]
+    verbs: [get, list, watch]
+  - apiGroups: [kopf.dev]
+    resources: [clusterkopfpeerings]
+    verbs: [get, list, watch, patch, create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: watcher-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: watcher-operator
+subjects:
+  - kind: ServiceAccount
+    name: watcher-operator
+    namespace: storage-operator-system
+---
+apiVersion: kopf.dev/v1
+kind: ClusterKopfPeering
+metadata:
+  name: watcher-operator

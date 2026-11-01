@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: watcher-operator-config
+  namespace: storage-operator-system
+data:
+  STORAGE_CLASS_NAME: local-path-ha
+  ACTIVE_NODE_LABEL_KEY: storage-ha/role
+  ACTIVE_NODE_LABEL_VALUE: active
+  READY_NODE_LABEL_KEY: storage-ha/ready
+  READY_NODE_LABEL_VALUE: "true"
+  IGNORE_ANNOTATION: storage-ha/ignore
+  MANAGED_ANNOTATION: storage-ha/managed
